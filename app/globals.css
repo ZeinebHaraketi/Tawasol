@@ -1,26 +1,31 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@theme {
+  /* On mappe tes couleurs directement sur les noms de classes standards */
+  --color-primary: #d7564f;     /* Rouge Tawasol */
+  --color-secondary: #258787;   /* Teal Tawasol */
+  --color-dark: #2c3e45;        /* Gris sombre */
+  --color-accent: #b96a60;
+  --color-deep: #882727;
+
+  --font-sans: "Inter", "ui-sans-serif", "system-ui";
+  --radius-uni: 1rem;
+}
+
+/* Compatibilité Shadcn UI */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --popover: 0 0% 100%;
+  --primary: 3.2 64% 57.6%; /* Correspond à #d7564f */
+  --secondary: 180 57% 34%; /* Correspond à #258787 */
+  --muted: 210 40% 96.1%;
+  --accent: 210 40% 96.1%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 3.2 64% 57.6%;
+  --radius: 0.5rem;
 }
