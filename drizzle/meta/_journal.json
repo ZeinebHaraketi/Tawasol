@@ -15,6 +15,34 @@
       "when": 1771635907212,
       "tag": "0001_calm_juggernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771801950913,
+      "tag": "0002_lonely_lilith",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1771802124005,
+      "tag": "0003_spotty_lockjaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1771802711077,
+      "tag": "0004_empty_wind_dancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772048263191,
+      "tag": "0005_cynical_gunslinger",
+      "breakpoints": true
     }
   ]
 }
