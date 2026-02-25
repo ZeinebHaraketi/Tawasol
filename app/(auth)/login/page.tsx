@@ -61,6 +61,7 @@ export default function LoginPage() {
       toast.success("Succès !", {
         description: "Ravi de vous revoir sur Tawasol.",
       });
+      router.push("/dashboard");
     } catch (error) {
       setError("Une erreur réseau est survenue.");
       toast.error("Connexion échouée", {
