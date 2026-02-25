@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -8,8 +9,12 @@ import {
   Bell,
   LogOut,
   Search,
+  UserIcon,
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 const menuItems = [
   { label: "Tableau de bord", icon: LayoutDashboard, href: "/dashboard" },
@@ -23,6 +28,23 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  // 1. Récupération de la session en temps réel
+  const { data: session, isPending } = authClient.useSession();
+
+  // 2. Fonction de déconnexion
+  const handleSignOut = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Déconnexion réussie");
+          router.push("/login");
+        },
+      },
+    });
+  };
+
   return (
     <div className="flex min-h-screen bg-[#f8fafb]">
       {/* SIDEBAR CREATIVE (FLOTTANTE) */}
@@ -78,7 +100,10 @@ export default function AdminLayout({
           {/* USER CARD VERSION MINI DANS SIDEBAR */}
           <div className="p-4 mt-auto">
             <div className="bg-white/5 rounded-3xl p-4 border border-white/5">
-              <button className="flex items-center justify-center gap-3 w-full py-2 text-sm font-bold text-primary hover:bg-primary/10 rounded-xl transition-colors">
+              <button
+                onClick={handleSignOut}
+                className="flex items-center justify-center gap-3 w-full py-2 text-sm font-bold text-primary hover:bg-primary/10 rounded-xl transition-colors"
+              >
                 <LogOut size={18} />
                 <span>Quitter</span>
               </button>
@@ -112,18 +137,33 @@ export default function AdminLayout({
 
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm font-black text-dark leading-none">
-                  Ali Ben Salem
-                </p>
-                <p className="text-[10px] font-bold text-secondary uppercase tracking-tighter">
-                  Super Admin
-                </p>
+                <div className="text-right">
+                  <p className="text-sm font-black text-dark leading-none capitalize">
+                    {session?.user && (session.user as any).firstName
+                      ? `${(session.user as any).firstName} ${(session.user as any).lastName}`
+                      : session?.user?.name || "Chargement..."}
+                  </p>
+                  <p className="text-[10px] font-bold text-secondary uppercase tracking-tighter">
+                    {(session?.user as any)?.role || "student"}
+                  </p>
+                </div>
               </div>
               <div className="relative group">
                 <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-secondary to-dark p-0.5 shadow-lg transition-transform group-hover:scale-105">
                   <div className="w-full h-full rounded-[calc(1rem-2px)] bg-white flex items-center justify-center overflow-hidden">
                     {/* On pourra mettre imageProfile ici plus tard */}
-                    <Users className="text-dark" size={20} />
+                    {/* <Users className="text-dark" size={20} /> */}
+                    {session?.user.image ? (
+                      <Image
+                        src={session.user.image}
+                        alt="Profil"
+                        width={48}
+                        height={48}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <UserIcon className="text-dark" size={20} />
+                    )}
                   </div>
                 </div>
               </div>

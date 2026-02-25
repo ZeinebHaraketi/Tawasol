@@ -7,8 +7,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '**',
+        hostname: 'lh3.googleusercontent.com', // C'est ici que Google stocke les photos
+        port: '',
+        pathname: '/**',
       },
     ],
   },

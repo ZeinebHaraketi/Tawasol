@@ -41,7 +41,7 @@ export default function Navbar() {
           <Link href="/login">
             <Button
               variant="ghost"
-              className="text-dark hover:text-primary cursor-pointer"
+              className="text-dark hover:text-amber-50 cursor-pointer"
             >
               Connexion
             </Button>
