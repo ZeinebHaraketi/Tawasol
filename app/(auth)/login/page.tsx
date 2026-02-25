@@ -43,21 +43,32 @@ export default function LoginPage() {
       return;
     }
 
-    const { data, error } = await authClient.signIn.email({
-      email,
-      password,
-      callbackURL: "/dashboard", // Redirection auto après login
-    });
-
-    if (error) {
-      setLoading(false);
-      return toast.error("Connexion échouée", {
-        description: "Email ou mot de passe incorrect. Réessayez.",
+    try {
+      const { error } = await authClient.signIn.email({
+        email,
+        password,
+        callbackURL: "/dashboard",
       });
+
+      if (error) {
+        setError("Email ou mot de passe incorrect.");
+        toast.error("Connexion échouée", {
+          description: "Email ou mot de passe incorrect. Réessayez.",
+        });
+        return;
+      }
+
+      toast.success("Succès !", {
+        description: "Ravi de vous revoir sur Tawasol.",
+      });
+    } catch (error) {
+      setError("Une erreur réseau est survenue.");
+      toast.error("Connexion échouée", {
+        description: "Une erreur réseau est survenue. Réessayez.",
+      });
+    } finally {
+      setLoading(false);
     }
-    toast.success("Succès !", {
-      description: "Ravi de vous revoir sur Tawasol.",
-    });
   };
 
   const handleGoogleLogin = async () => {

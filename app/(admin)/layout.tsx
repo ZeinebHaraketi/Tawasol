@@ -15,6 +15,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 const menuItems = [
   { label: "Tableau de bord", icon: LayoutDashboard, href: "/dashboard" },
@@ -32,6 +33,15 @@ export default function AdminLayout({
 
   // 1. Récupération de la session en temps réel
   const { data: session, isPending } = authClient.useSession();
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.replace("/login");
+    }
+  }, [isPending, session, router]);
+
+  if (isPending) return null;
+  if (!session) return null;
 
   // 2. Fonction de déconnexion
   const handleSignOut = async () => {
