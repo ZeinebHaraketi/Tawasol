@@ -31,7 +31,7 @@ export default function StudentHomePage() {
 
           <h1 className="text-6xl md:text-7xl font-black text-dark tracking-tighter leading-[0.9]">
             Propulsez votre <br />
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-secondary to-primary">carrière académique</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-primary">carrière académique</span>
           </h1>
           
           <p className="text-xl text-gray-500 font-medium max-w-2xl mx-auto">

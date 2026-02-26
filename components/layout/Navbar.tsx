@@ -85,7 +85,7 @@ export default function Navbar() {
                   </div>
                   <div className="flex flex-col text-left">
                     <span className="text-sm font-bold text-dark leading-none">
-                      {session.user.name.split(" ")[0]}
+                      {session.user.name?.split(" ")[0] || "Utilisateur"}{" "}
                     </span>
                     <span className="text-[10px] text-gray-500 font-medium capitalize">
                       {role || "Étudiant"}

@@ -35,17 +35,15 @@ export default function AdminLayout({
   const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
-    if (!isPending && !session) {
+    if (!isPending && (!session || (session.user as any).role !== "admin")) {
       router.replace("/login");
     }
   }, [isPending, session, router]);
 
   if (isPending) return <p>Chargement...</p>;
   // if (!session) return null;
-  if (!session || (session.user as any).role !== "admin") {
-    router.push("/login");
-    return null;
-  }
+  if (!session || (session.user as any).role !== "admin") return null;
+
   // 2. Fonction de déconnexion
   const handleSignOut = async () => {
     await authClient.signOut({

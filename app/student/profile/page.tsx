@@ -29,12 +29,12 @@ import {
   Award,
   MapPin,
 } from "lucide-react";
-import Image from "next/image";
 import { updateUserSchema } from "@/lib/validation";
 
 export default function ProfilePage() {
   const { data: session, isPending } = authClient.useSession();
   const [updating, setUpdating] = useState(false);
+ const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const initial = session?.user?.name?.charAt(0).toUpperCase() || "U";
   const role = (session?.user as any)?.role || "Étudiant";
@@ -77,8 +77,36 @@ export default function ProfilePage() {
       </div>
     );
 
+  // const compressImage = (file: File, maxWidth = 400): Promise<string> => {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.readAsDataURL(file);
+  //     reader.onload = (event) => {
+  //       const img = new window.Image();
+  //       img.src = event.target?.result as string;
+  //       img.onload = () => {
+  //         const canvas = document.createElement("canvas");
+  //         const scaleFactor = maxWidth / img.width;
+
+  //         // On garde le ratio, mais on limite la largeur à 400px (suffisant pour un profil)
+  //         canvas.width = maxWidth;
+  //         canvas.height = img.height * scaleFactor;
+
+  //         const ctx = canvas.getContext("2d");
+  //         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  //         // On compresse en JPEG avec une qualité de 0.7 (70%)
+  //         const base64 = canvas.toDataURL("image/jpeg", 0.7);
+  //         resolve(base64);
+  //       };
+  //       img.onerror = (err) => reject(err);
+  //     };
+  //     reader.onerror = (err) => reject(err);
+  //   });
+  // };
+
   const compressImage = (file: File, maxWidth = 400): Promise<string> => {
-    return new Promise((resolve, reject) => {
+   return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = (event) => {
@@ -87,25 +115,18 @@ export default function ProfilePage() {
         img.onload = () => {
           const canvas = document.createElement("canvas");
           const scaleFactor = maxWidth / img.width;
-
-          // On garde le ratio, mais on limite la largeur à 400px (suffisant pour un profil)
           canvas.width = maxWidth;
           canvas.height = img.height * scaleFactor;
-
           const ctx = canvas.getContext("2d");
           ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          // On compresse en JPEG avec une qualité de 0.7 (70%)
           const base64 = canvas.toDataURL("image/jpeg", 0.7);
           resolve(base64);
-        };
+       };
         img.onerror = (err) => reject(err);
       };
       reader.onerror = (err) => reject(err);
     });
   };
-
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
