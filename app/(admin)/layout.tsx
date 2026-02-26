@@ -40,9 +40,12 @@ export default function AdminLayout({
     }
   }, [isPending, session, router]);
 
-  if (isPending) return null;
-  if (!session) return null;
-
+  if (isPending) return <p>Chargement...</p>;
+  // if (!session) return null;
+  if (!session || (session.user as any).role !== "admin") {
+    router.push("/login");
+    return null;
+  }
   // 2. Fonction de déconnexion
   const handleSignOut = async () => {
     await authClient.signOut({
