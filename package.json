@@ -10,12 +10,14 @@
     "db:seed": "tsx db/seed.ts"
   },
   "dependencies": {
+    "@imagekit/next": "^2.1.5",
     "@neondatabase/serverless": "^1.0.2",
     "better-auth": "^1.4.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.34.3",
+    "imagekit": "^6.0.0",
     "lucide-react": "^0.575.0",
     "next": "16.1.6",
     "next-themes": "^0.4.6",
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/imagekit": "^3.1.5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

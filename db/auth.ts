@@ -12,11 +12,18 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  // user: {
+  //   additionalFields: {
+  //     firstName: { type: "string", mapTo: "first_name" },
+  //     lastName: { type: "string", mapTo: "last_name" },
+  //     role: { type: "string", mapTo: "role" },
+  //   },
+  // },
   user: {
     additionalFields: {
-      firstName: { type: "string", mapTo: "first_name" },
-      lastName: { type: "string", mapTo: "last_name" },
-      role: { type: "string", mapTo: "role" },
+      firstName: { type: "string" },
+      lastName: { type: "string" },
+      role: { type: "string" },
     },
   },
 

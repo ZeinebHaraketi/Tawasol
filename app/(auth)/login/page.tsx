@@ -47,7 +47,7 @@ export default function LoginPage() {
       const { error } = await authClient.signIn.email({
         email,
         password,
-        callbackURL: "/dashboard",
+        // callbackURL: "/dashboard",
       });
 
       if (error) {
@@ -58,9 +58,28 @@ export default function LoginPage() {
         return;
       }
 
+      // RÉCUPÉRATION DU RÔLE (Une fois connecté, on check la session)
+  const session = await authClient.getSession();
+  const role = (session?.data?.user as any)?.role;
+
       toast.success("Succès !", {
         description: "Ravi de vous revoir sur Tawasol.",
       });
+      // router.push("/dashboard");
+
+      // REDIRECTION DYNAMIQUE
+  switch (role) {
+    case "admin":
+      router.push("/dashboard");
+      break;
+    case "professor":
+      router.push("/professor/home");
+      break;
+    case "student":
+    default:
+      router.push("/student/home"); // Page d'accueil pour les étudiants
+      break;
+  }
     } catch (error) {
       setError("Une erreur réseau est survenue.");
       toast.error("Connexion échouée", {
