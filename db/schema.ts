@@ -1,58 +1,57 @@
 import {
   pgTable,
-  serial,
   text,
   varchar,
   timestamp,
-  integer,
   boolean,
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-// --- 1. DÉFINITION DES ENUMS (TYPES ÉNUMÉRÉS) ---
+// --- 1. DÉFINITION DES ENUMS ---
 
-// Rôles des utilisateurs pour la sécurité et les accès
 export const userRoleEnum = pgEnum("user_role", [
   "student",
   "admin",
   "professor",
 ]);
 
-// Statuts des bourses et événements
 export const statusEnum = pgEnum("status", ["ouvert", "ferme", "bientot"]);
 
-// Statuts des candidatures (Applications)
 export const applicationStatusEnum = pgEnum("application_status", [
   "en_attente",
   "valide",
   "refuse",
 ]);
 
+export const documentStatusEnum = pgEnum("document_status", [
+  "en_attente",
+  "valide",
+  "rejete",
+]);
+
 // --- 2. TABLES DES UTILISATEURS ---
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
-  name: text("name").notNull(), // 👈 Ajoute cette ligne
+  name: text("name").notNull(),
   firstName: text("first_name"),
   lastName: text("last_name"),
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: text("password"),
-  image: text("image"), // Rôle : student par défaut
+  image: text("image"),
   role: userRoleEnum("role").default("student").notNull(),
   emailVerified: boolean("email_verified").default(false).notNull(),
-
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // --- 3. TABLES DU SYSTÈME UNIVERSITAIRE ---
 
-// Table des Universités (ex: Université de Carthage)
 export const universities = pgTable("universities", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  city: varchar("city", { length: 100 }).notNull(), // Tunis, Sousse, etc.
+  city: varchar("city", { length: 100 }).notNull(),
   description: text("description"),
   website: text("website"),
   logoUrl: text("logo_url"),
@@ -60,24 +59,22 @@ export const universities = pgTable("universities", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Table des Facultés/Écoles (ex: IHEC, ENIT, Faculté de Médecine)
 export const faculties = pgTable("faculties", {
   id: text("id").primaryKey(),
   universityId: text("university_id").references(() => universities.id, {
     onDelete: "cascade",
   }),
   name: text("name").notNull(),
-  type: varchar("type", { length: 100 }), // Faculté, Institut, Ecole d'Ingénieurs
+  type: varchar("type", { length: 100 }),
   address: text("address"),
 });
 
-// --- 4. TABLES DES RESSOURCES (BOURSES & ÉVÉNEMENTS) ---
+// --- 4. TABLES DES RESSOURCES ---
 
-// Table des Bourses d'études
 export const scholarships = pgTable("scholarships", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
-  provider: text("provider").notNull(), // ex: Ministère, Ambassade de France, etc.
+  provider: text("provider").notNull(),
   amount: varchar("amount", { length: 100 }),
   deadline: timestamp("deadline"),
   description: text("description"),
@@ -86,7 +83,6 @@ export const scholarships = pgTable("scholarships", {
   applyLink: text("apply_link"),
 });
 
-// Table des Événements (Salons de l'étudiant, JPO)
 export const events = pgTable("events", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
@@ -98,7 +94,7 @@ export const events = pgTable("events", {
   isVirtual: boolean("is_virtual").default(false),
 });
 
-// --- 5. TABLE DES CANDIDATURES (LIAISON ÉTUDIANT - FACULTÉ) ---
+// --- 5. TABLE DES CANDIDATURES ---
 
 export const applications = pgTable("applications", {
   id: text("id").primaryKey(),
@@ -108,32 +104,45 @@ export const applications = pgTable("applications", {
   facultyId: text("faculty_id").references(() => faculties.id, {
     onDelete: "cascade",
   }),
-
-  // Utilise l'Enum pour garantir la cohérence des statuts
   status: applicationStatusEnum("status").default("en_attente"),
-
   submittedAt: timestamp("submitted_at").defaultNow(),
-  notes: text("notes"), // Pour d'éventuels retours de l'admin/professeur
+  notes: text("notes"),
 });
 
-// Relations pour la table Users
+// --- 6. TABLE DES DOCUMENTS ---
+
+export const documents = pgTable("documents", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 50 }).notNull(), 
+  fileUrl: text("file_url").notNull(),
+  fileName: text("file_name"),
+  status: documentStatusEnum("status").default("en_attente"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// --- 7. DÉFINITION DES RELATIONS ---
+
+// Fusion de toutes les relations pour la table Users
 export const usersRelations = relations(users, ({ many }) => ({
   applications: many(applications),
+  documents: many(documents),
 }));
 
-// Relations pour la table Applications
 export const applicationsRelations = relations(applications, ({ one }) => ({
-  userId: one(users, {
+  user: one(users, {
     fields: [applications.userId],
     references: [users.id],
   }),
-  facultyId: one(faculties, {
+  faculty: one(faculties, {
     fields: [applications.facultyId],
     references: [faculties.id],
   }),
 }));
 
-// Relations pour la table Faculties
 export const facultiesRelations = relations(faculties, ({ one, many }) => ({
   university: one(universities, {
     fields: [faculties.universityId],
@@ -142,7 +151,14 @@ export const facultiesRelations = relations(faculties, ({ one, many }) => ({
   applications: many(applications),
 }));
 
-// --- TABLES TECHNIQUES POUR BETTER AUTH ---
+export const documentsRelations = relations(documents, ({ one }) => ({
+  user: one(users, {
+    fields: [documents.userId],
+    references: [users.id],
+  }),
+}));
+
+// --- 8. TABLES TECHNIQUES POUR BETTER AUTH ---
 
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),

@@ -43,6 +43,13 @@
       "when": 1772048263191,
       "tag": "0005_cynical_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773487661706,
+      "tag": "0006_talented_susan_delgado",
+      "breakpoints": true
     }
   ]
 }

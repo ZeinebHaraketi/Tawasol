@@ -28,13 +28,17 @@ import {
   Lock,
   Award,
   MapPin,
+  ArrowRight,
+  FileCheck2,
 } from "lucide-react";
-import Image from "next/image";
 import { updateUserSchema } from "@/lib/validation";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [updating, setUpdating] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const initial = session?.user?.name?.charAt(0).toUpperCase() || "U";
   const role = (session?.user as any)?.role || "Étudiant";
@@ -77,6 +81,34 @@ export default function ProfilePage() {
       </div>
     );
 
+  // const compressImage = (file: File, maxWidth = 400): Promise<string> => {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.readAsDataURL(file);
+  //     reader.onload = (event) => {
+  //       const img = new window.Image();
+  //       img.src = event.target?.result as string;
+  //       img.onload = () => {
+  //         const canvas = document.createElement("canvas");
+  //         const scaleFactor = maxWidth / img.width;
+
+  //         // On garde le ratio, mais on limite la largeur à 400px (suffisant pour un profil)
+  //         canvas.width = maxWidth;
+  //         canvas.height = img.height * scaleFactor;
+
+  //         const ctx = canvas.getContext("2d");
+  //         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  //         // On compresse en JPEG avec une qualité de 0.7 (70%)
+  //         const base64 = canvas.toDataURL("image/jpeg", 0.7);
+  //         resolve(base64);
+  //       };
+  //       img.onerror = (err) => reject(err);
+  //     };
+  //     reader.onerror = (err) => reject(err);
+  //   });
+  // };
+
   const compressImage = (file: File, maxWidth = 400): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -87,15 +119,10 @@ export default function ProfilePage() {
         img.onload = () => {
           const canvas = document.createElement("canvas");
           const scaleFactor = maxWidth / img.width;
-
-          // On garde le ratio, mais on limite la largeur à 400px (suffisant pour un profil)
           canvas.width = maxWidth;
           canvas.height = img.height * scaleFactor;
-
           const ctx = canvas.getContext("2d");
           ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          // On compresse en JPEG avec une qualité de 0.7 (70%)
           const base64 = canvas.toDataURL("image/jpeg", 0.7);
           resolve(base64);
         };
@@ -105,34 +132,36 @@ export default function ProfilePage() {
     });
   };
 
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const handleProfileImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+    try {
+      toast.loading("Optimisation de l'image...", { id: "profile-update" });
 
-  try {
-    toast.loading("Optimisation de l'image...", { id: "profile-update" });
+      // 1. Compression de l'image
+      const compressedBase64 = await compressImage(file, 400);
+      setPreviewImage(compressedBase64);
 
-    // 1. Compression de l'image
-    const compressedBase64 = await compressImage(file, 400);
-    setPreviewImage(compressedBase64);
+      // 2. Envoi à la base de données via authClient
+      const { error } = await authClient.updateUser({
+        image: compressedBase64,
+      });
 
-    // 2. Envoi à la base de données via authClient
-    const { error } = await authClient.updateUser({
-      image: compressedBase64,
-    });
-
-    if (error) {
-      toast.error("Erreur : " + error.message, { id: "profile-update" });
-    } else {
-      toast.success("Photo de profil mise à jour !", { id: "profile-update" });
+      if (error) {
+        toast.error("Erreur : " + error.message, { id: "profile-update" });
+      } else {
+        toast.success("Photo de profil mise à jour !", {
+          id: "profile-update",
+        });
+      }
+    } catch (err) {
+      toast.error("Erreur lors de la compression", { id: "profile-update" });
+      console.error(err);
     }
-  } catch (err) {
-    toast.error("Erreur lors de la compression", { id: "profile-update" });
-    console.error(err);
-  }
-};
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
@@ -256,6 +285,29 @@ export default function ProfilePage() {
                 </div>
               </div>
             </CardContent>
+          </Card>
+
+          {/* NOUVELLE CARD : RACCOURCI DOCUMENTS DANS LA SIDEBAR */}
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-gradient-to-br from-secondary/10 to-transparent border border-secondary/20 p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-secondary rounded-2xl text-white">
+                <FileCheck2 size={24} />
+              </div>
+              <h3 className="font-black text-dark text-lg">
+                Dossier Académique
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 font-medium mb-6">
+              Assurez-vous que votre CIN et vos relevés de notes sont à jour
+              pour postuler.
+            </p>
+            <Button
+              onClick={() => router.push("/student/documents")} // Redirection
+              variant="outline"
+              className="w-full rounded-2xl border-secondary text-secondary font-bold hover:bg-secondary hover:text-white transition-all"
+            >
+              Vérifier mes pièces <ArrowRight size={16} className="ml-2" />
+            </Button>
           </Card>
 
           <div className="p-8 bg-dark rounded-[2.5rem] text-white relative overflow-hidden group shadow-2xl shadow-dark/20">
