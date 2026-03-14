@@ -23,16 +23,80 @@ export default function LoginPage() {
   }>({});
   const router = useRouter();
 
+  // const handleLogin = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setError("");
+
+  //   setFieldErrors({});
+
+  //   // --- 2. CONTRÔLE DE SAISIE AVEC ZOD ---
+  //   const validation = loginSchema.safeParse({ email, password });
+
+  //   if (!validation.success) {
+  //     const errors = validation.error.flatten().fieldErrors;
+  //     setFieldErrors({
+  //       email: errors.email?.[0],
+  //       password: errors.password?.[0],
+  //     });
+  //     setLoading(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     const { error } = await authClient.signIn.email({
+  //       email,
+  //       password,
+  //       // callbackURL: "/dashboard",
+  //     });
+
+  //     if (error) {
+  //       setError("Email ou mot de passe incorrect.");
+  //       toast.error("Connexion échouée", {
+  //         description: "Email ou mot de passe incorrect. Réessayez.",
+  //       });
+  //       return;
+  //     }
+
+  //     // RÉCUPÉRATION DU RÔLE (Une fois connecté, on check la session)
+  // const session = await authClient.getSession();
+  // const role = (session?.data?.user as any)?.role;
+
+  //     toast.success("Succès !", {
+  //       description: "Ravi de vous revoir sur Tawasol.",
+  //     });
+  //     // router.push("/dashboard");
+
+  //     // REDIRECTION DYNAMIQUE
+  // switch (role) {
+  //   case "admin":
+  //     router.push("/dashboard");
+  //     break;
+  //   case "professor":
+  //     router.push("/professor/home");
+  //     break;
+  //   case "student":
+  //   default:
+  //     router.push("/student/home"); // Page d'accueil pour les étudiants
+  //     break;
+  // }
+  //   } catch (error) {
+  //     setError("Une erreur réseau est survenue.");
+  //     toast.error("Connexion échouée", {
+  //       description: "Une erreur réseau est survenue. Réessayez.",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     setFieldErrors({});
 
-    // --- 2. CONTRÔLE DE SAISIE AVEC ZOD ---
     const validation = loginSchema.safeParse({ email, password });
-
     if (!validation.success) {
       const errors = validation.error.flatten().fieldErrors;
       setFieldErrors({
@@ -44,56 +108,57 @@ export default function LoginPage() {
     }
 
     try {
-      const { error } = await authClient.signIn.email({
+      // 1. On récupère le résultat directement du signIn
+      const { data, error } = await authClient.signIn.email({
         email,
         password,
-        // callbackURL: "/dashboard",
+        callbackURL: "/auth-callback",
       });
 
       if (error) {
         setError("Email ou mot de passe incorrect.");
-        toast.error("Connexion échouée", {
-          description: "Email ou mot de passe incorrect. Réessayez.",
-        });
+        toast.error("Connexion échouée");
+        setLoading(false);
         return;
       }
 
-      // RÉCUPÉRATION DU RÔLE (Une fois connecté, on check la session)
-  const session = await authClient.getSession();
-  const role = (session?.data?.user as any)?.role;
+      // 2. On extrait le rôle depuis 'data.user' renvoyé par le signIn
+      // Pas besoin de getSession() ici !
+      const role = (data?.user as any)?.role;
 
       toast.success("Succès !", {
         description: "Ravi de vous revoir sur Tawasol.",
       });
-      // router.push("/dashboard");
 
-      // REDIRECTION DYNAMIQUE
-  switch (role) {
-    case "admin":
-      router.push("/dashboard");
-      break;
-    case "professor":
-      router.push("/professor/home");
-      break;
-    case "student":
-    default:
-      router.push("/student/home"); // Page d'accueil pour les étudiants
-      break;
-  }
+      // 3. Redirection avec un petit délai (optionnel mais recommandé pour laisser les cookies s'installer)
+      setTimeout(() => {
+        switch (role) {
+          case "admin":
+            router.push("/dashboard");
+            break;
+          case "professor":
+            router.push("/professor/home");
+            break;
+          case "student":
+            router.push("/student/home");
+            break;
+          default:
+            router.push("/student/home");
+            break;
+        }
+      }, 100);
     } catch (error) {
       setError("Une erreur réseau est survenue.");
-      toast.error("Connexion échouée", {
-        description: "Une erreur réseau est survenue. Réessayez.",
-      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    await authClient.signOut();
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/dashboard", // Où aller après le succès
+      callbackURL: "/auth-callback", // On envoie l'utilisateur vers notre trieur
     });
   };
 
