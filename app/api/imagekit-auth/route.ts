@@ -14,4 +14,7 @@ export async function GET(req: Request) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const authParams = imagekit.getAuthenticationParameters();
+  return NextResponse.json(authParams);
 }

@@ -38,12 +38,16 @@ const REQUIRED_DOCS = [
     id: "diploma",
     name: "Dernier Diplôme obtenu",
     description: "Si applicable (Licence, etc.)",
+    required: false,
   },
 ];
 
 export default function DocumentsPage() {
+  //   const [uploads, setUploads] = useState<
+  //     Record<string, { name: string; url: string }>
+  //   >({});
   const [uploads, setUploads] = useState<
-    Record<string, { name: string; url: string }>
+    Record<string, { file: File; name: string; previewUrl: string }>
   >({});
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,8 +60,11 @@ export default function DocumentsPage() {
 
   // Calcul de progression mémoïsé
   const stats = useMemo(() => {
-    const uploadedCount = Object.keys(uploads).length;
-    const totalCount = REQUIRED_DOCS.length;
+    // const uploadedCount = Object.keys(uploads).length;
+    // const totalCount = REQUIRED_DOCS.length;
+    const requiredDocs = REQUIRED_DOCS.filter((doc) => doc.required !== false);
+    const uploadedCount = requiredDocs.filter((doc) => uploads[doc.id]).length;
+    const totalCount = requiredDocs.length;
     return {
       percentage: Math.round((uploadedCount / totalCount) * 100),
       isComplete: uploadedCount === totalCount,
@@ -72,8 +79,13 @@ export default function DocumentsPage() {
     input.onchange = (e: any) => {
       const file = e.target.files[0];
       if (file) {
-        const url = URL.createObjectURL(file);
-        setUploads((prev) => ({ ...prev, [docId]: { name: file.name, url } }));
+        // const url = URL.createObjectURL(file);
+        // setUploads((prev) => ({ ...prev, [docId]: { name: file.name, url } }));
+         const previewUrl = URL.createObjectURL(file);
+        setUploads((prev) => ({
+          ...prev,
+          [docId]: { file, name: file.name, previewUrl },
+        }));
         toast.success(`${file.name} ajouté.`);
       }
     };
@@ -154,31 +166,48 @@ export default function DocumentsPage() {
         <div className="bg-linear-to-r from-secondary/10 to-primary/10 border border-secondary/20 p-6 rounded-[2rem] animate-in zoom-in-95 duration-500">
           <div className="flex items-center gap-3 mb-4">
             <Sparkles className="text-secondary animate-pulse" />
-            <h3 className="font-black text-dark">Données détectées par Tawasol AI</h3>
+            <h3 className="font-black text-dark">
+              Données détectées par Tawasol AI
+            </h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-              <p className="text-[10px] font-black uppercase text-slate-400">Moyenne Bac</p>
-              <p className="text-2xl font-black text-secondary">{aiResult.moyenne}</p>
+              <p className="text-[10px] font-black uppercase text-slate-400">
+                Moyenne Bac
+              </p>
+              <p className="text-2xl font-black text-secondary">
+                {aiResult.moyenne}
+              </p>
             </div>
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-              <p className="text-[10px] font-black uppercase text-slate-400">Section / Série</p>
+              <p className="text-[10px] font-black uppercase text-slate-400">
+                Section / Série
+              </p>
               <p className="text-lg font-black text-dark">{aiResult.serie}</p>
             </div>
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-              <p className="text-[10px] font-black uppercase text-slate-400">Mention</p>
+              <p className="text-[10px] font-black uppercase text-slate-400">
+                Mention
+              </p>
               <p className="text-lg font-black text-dark">{aiResult.mention}</p>
             </div>
           </div>
-          
+
           <div className="mt-6 flex gap-3">
-             <Button onClick={() => setAiResult(null)} className="bg-secondary text-white font-bold rounded-xl px-6">
-                C'est correct <Check size={16} className="ml-2" />
-             </Button>
-             <Button variant="ghost" onClick={() => setAiResult(null)} className="text-slate-400 hover:text-red-500 font-bold">
-                Modifier manuellement
-             </Button>
+            <Button
+              onClick={() => setAiResult(null)}
+              className="bg-secondary text-white font-bold rounded-xl px-6"
+            >
+              C'est correct <Check size={16} className="ml-2" />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setAiResult(null)}
+              className="text-slate-400 hover:text-red-500 font-bold"
+            >
+              Modifier manuellement
+            </Button>
           </div>
         </div>
       )}
@@ -188,20 +217,26 @@ export default function DocumentsPage() {
         {/* ... Ta boucle .map sur les documents ... */}
         {/* Exemple spécifique pour le relevé de notes Bac */}
         {/* Si doc.id === 'bac_transcript' ET que le fichier est présent : */}
-        {uploads['bac_transcript'] && !aiResult && (
-          <Button 
+        {uploads["bac_transcript"] && !aiResult && (
+          <Button
             disabled={analyzing}
-            onClick={() => handleAnalyze(uploads['bac_transcript'].url)}
+            onClick={() => handleAnalyze(uploads["bac_transcript"].previewUrl)}
             className="w-full h-12 rounded-2xl bg-dark text-white font-bold border-2 border-secondary/30 hover:bg-secondary/20 hover:text-dark transition-all"
           >
             {analyzing ? (
-              <><Loader2 className="mr-2 animate-spin" /> Analyse des notes en arabe...</>
+              <>
+                <Loader2 className="mr-2 animate-spin" /> Analyse des notes en
+                arabe...
+              </>
             ) : (
-              <><Sparkles className="mr-2" size={18} /> Extraire mes notes automatiquement (IA)</>
+              <>
+                <Sparkles className="mr-2" size={18} /> Extraire mes notes
+                automatiquement (IA)
+              </>
             )}
           </Button>
         )}
-    </div>
+      </div>
 
       {/* --- LISTE DES DOCUMENTS --- */}
       <div className="grid gap-4">
@@ -238,7 +273,7 @@ export default function DocumentsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setPreviewUrl(docData.url)}
+                      onClick={() => setPreviewUrl(docData.previewUrl)}
                       className="text-slate-400 hover:text-secondary hover:bg-secondary/10"
                     >
                       <Eye size={20} />

@@ -17,14 +17,28 @@ export async function POST(req: Request) {
       return new NextResponse("Non autorisé", { status: 401 });
     }
 
-    const { type, fileUrl, fileName } = await req.json();
+    // const { type, fileUrl, fileName } = await req.json();
+
+    const body = await req.json().catch(() => null);
+    const { type, fileUrl, fileName } = body ?? {};
+
+    if (
+    typeof type !== "string" ||
+      type.length === 0 ||
+      type.length > 50 ||
+      typeof fileUrl !== "string" ||
+      fileUrl.length === 0 ||
+      (fileName != null && typeof fileName !== "string")
+    ) {
+      return NextResponse.json({ error: "Payload invalide" }, { status: 400 });
+    }
 
     // 2. Logique Upsert manuelle avec Drizzle
     // On cherche si le document existe déjà pour ce type ET cet utilisateur
     const existingDoc = await db.query.documents.findFirst({
       where: and(
         eq(documents.userId, session.user.id),
-        eq(documents.type, type)
+        eq(documents.type, type),
       ),
     });
 
@@ -63,3 +77,6 @@ export async function POST(req: Request) {
     return new NextResponse("Erreur interne", { status: 500 });
   }
 }
+
+
+
